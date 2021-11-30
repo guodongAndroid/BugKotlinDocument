@@ -1,7 +1,4 @@
 /**
-fun twoParamWithExpressionReturn(i: Int, j: Int, l: List<String>, vararg strings: String, persion: Persion) = "${i + j}"
+fun twoParamWithExpressionReturn(i: Int, j: Int, l: List<String>, vararg strings: String, person: Person) = "${i + j}"
 
-data class Persion(val name: String)
-
-/**
-fun Pair<String, String>.add(str: String)
+data class Person(val name: String)

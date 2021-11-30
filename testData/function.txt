@@ -1,7 +1,13 @@
 /**
  * 
- * @param i Int
- * @param j Int
- * @return String
+ * @param i [Int]
+ * @param j [Int]
+ * @param l [List]
+ * @param strings [Array]
+ * @param person [Person]
+ * @return [String]
  */
-fun twoParamWithExpressionReturn(i: Int, j: Int) = "${i + j}"
+fun twoParamWithExpressionReturn(i: Int, j: Int, vararg strings: String, person: Person) = "${i + j}"
+
+
+data class Person(val name: String)
