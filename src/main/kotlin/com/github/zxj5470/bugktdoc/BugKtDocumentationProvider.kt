@@ -14,6 +14,7 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiField
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.util.containers.isNullOrEmpty
+import org.jetbrains.kotlin.asJava.unwrapped
 import org.jetbrains.kotlin.kdoc.psi.impl.KDocImpl
 import org.jetbrains.kotlin.psi.*
 
@@ -53,8 +54,10 @@ class BugKtDocumentationProvider : DocumentationProviderEx(), CodeDocumentationP
 		fun docKtNamedFunction(owner: KtNamedFunction) = buildString {
 			// @receiver
 			owner.receiverTypeReference?.let {
+				val text = it.text
+				val realText = if (text.contains("<")) text.subSequence(0, text.indexOf("<")) else text
 				appendDecorate(RECEIVER)
-				append(it.text)
+				append("[$realText]")
 				append(LF)
 			}
 
@@ -64,20 +67,20 @@ class BugKtDocumentationProvider : DocumentationProviderEx(), CodeDocumentationP
 				val type = it.itsType
 				appendDecorate(PARAM)
 				// add a space before `param` and after is no used
-				append("$param $type")
+				append("$param [$type]")
 				append(LF)
 			}
 
 			// @return
 			if (owner.hasDeclaredReturnType()) {
 				appendDecorate(RETURN)
-				append(owner.typeReference?.typeElement?.text)
+				append("[${owner.typeReference?.typeElement?.text}]")
 				append(LF)
 			} else {
 				owner.itsType.let {
 					if (isAlwaysShowUnitReturnType || it != "Unit") {
 						appendDecorate(RETURN)
-						append(it)
+						append("[$it]")
 						append(LF)
 					}
 				}
@@ -86,11 +89,11 @@ class BugKtDocumentationProvider : DocumentationProviderEx(), CodeDocumentationP
 			// @throws
 			PsiTreeUtil.findChildrenOfType(owner, KtAnnotationEntry::class.java)
 				.firstOrNull { it.calleeExpression?.text == "Throws" }
-				?.valueArguments?.forEach {
-				(it.getArgumentExpression() as? KtClassLiteralExpression)?.let {
-					PsiTreeUtil.findChildOfType(it, KtNameReferenceExpression::class.java)?.text?.let {
+				?.valueArguments?.forEach { varg ->
+				(varg.getArgumentExpression() as? KtClassLiteralExpression)?.let { expression ->
+					PsiTreeUtil.findChildOfType(expression, KtNameReferenceExpression::class.java)?.text?.let {
 						appendDecorate(THROWS)
-						append(it)
+						append("[$it]")
 						append(LF)
 					}
 				}
@@ -114,7 +117,7 @@ class BugKtDocumentationProvider : DocumentationProviderEx(), CodeDocumentationP
 						if (!param.isNullOrEmpty() && !type.isEmpty()) {
 							appendDecorate(PROPERTY)
 							// add a space before or after is no used
-							append("$param $type")
+							append("$param [$type]")
 							append(LF)
 						}
 					}
@@ -128,7 +131,7 @@ class BugKtDocumentationProvider : DocumentationProviderEx(), CodeDocumentationP
 						if (!param.isNullOrEmpty()) {
 							appendDecorate(PROPERTY)
 							// add a space before or after is no used
-							append("$param $type")
+							append("$param [$type]")
 							append(LF)
 						}
 					}
@@ -153,7 +156,7 @@ class BugKtDocumentationProvider : DocumentationProviderEx(), CodeDocumentationP
 					val type = it.itsType
 					if (!param.isNullOrEmpty() && !type.isEmpty()) {
 						appendDecorate(PARAM)
-						append("$param $type")
+						append("$param [$type]")
 						append(LF)
 					}
 				}

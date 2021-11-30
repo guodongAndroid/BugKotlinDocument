@@ -41,8 +41,16 @@ object BugKtDocBundle {
 		CommonBundle.message(bundle, key, *params)
 }
 
-inline val KtCallableDeclaration.itsType
-	get() = SpecifyTypeExplicitlyIntention.getTypeForDeclaration(this).unwrap().toString()
+val simpleTypeImpl = Class.forName("org.jetbrains.kotlin.types.SimpleTypeImpl").kotlin
+
+inline val KtCallableDeclaration.itsType: String
+	get() {
+		 val type = SpecifyTypeExplicitlyIntention.getTypeForDeclaration(this).unwrap()
+		 return when (type::class) {
+			  simpleTypeImpl -> type.constructor.toString()
+			  else -> type.toString()
+		 }
+	}
 
 val isKotlinNative
 	get() = PlatformUtils.isAppCode() || PlatformUtils.isCLion()
